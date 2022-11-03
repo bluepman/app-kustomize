@@ -1,0 +1,107 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: u5gc-smf
+  labels:
+    app: u5gc-smf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: u5gc-smf
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: u5gc-smf
+    spec:
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+      containers:
+        - name: u5gc-smf
+          image: smf_image
+          imagePullPolicy: Always
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: u5gc-smf-config
+              mountPath: /app/config
+            - name: u5gc-smf-cert
+              mountPath: /app/config/TLS
+            - name: u5gc-stats
+              mountPath: /app/stats
+            - name: tz-seoul
+              mountPath: /etc/localtime
+          ports:
+            - containerPort: 8000
+              name: if-sbi
+              protocol: TCP
+            - containerPort: 8805
+              name: if-n4
+              protocol: UDP
+          args: [/bin/sh, -c, '/app/smf -c /app/config/smfcfg.yaml']
+        - name: "uem-emsubagt"
+          image: camel.uangel.com:5000/uemsub/uemsub:v1.0.1
+          imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: 1
+              memory: 1Gi
+            requests:
+              cpu: 1
+              memory: 512Mi
+          command:
+            - 'sh'
+            - '-c'
+            - >-
+              echo ''Setting config file''
+              && cp /tmp/data/* /home/app/data/.
+              && /home/app/bin/uem
+          ports:
+            - containerPort: 9292
+          env:
+            - name: UEM_CONFIG_FILE
+              value: "/home/app/data/uemsub.conf"
+            - name: UASYS_HOME
+              value: "/home/app"
+            - name: MYSQL_ADDR
+              value: "mariadb.ucdb.svc.cluster.local"
+            - name: MYSQL_PORT
+              value: "3306"
+            - name: EM_SERVICE
+              value: "ems-uem"
+            - name: EM_HTTP_PORT
+              value: "9191"
+            - name: MY_GROUP
+              value: "SMF"
+            - name: TRACE_ENABLED
+              value: "false"
+          volumeMounts:
+            - name: u5gc-stats
+              mountPath: /app/stat
+            - name: data-volume
+              mountPath: /tmp/data
+            - name: tz-seoul
+              mountPath: /etc/localtime
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      serviceAccountName: u5gc-smf-sa
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: u5gc-smf-cert
+          secret:
+            secretName: u5gc-smf-tls-secret
+        - name: u5gc-smf-config
+          configMap:
+            name: u5gc-smf-config
+        - name: u5gc-stats
+          emptyDir: {}
+        - name: data-volume
+          configMap:
+            name: uemsub-data
+        - name: tz-seoul
+          hostPath:
+            path: /usr/share/zoneinfo/Asia/Seoul

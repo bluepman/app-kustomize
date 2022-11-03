@@ -1,0 +1,17 @@
+info:
+  version: 1.0.0
+  description: UPF configuration
+
+configuration:
+  debugLevel: trace
+  ReportCaller: false
+
+  pfcp:
+    - addr: 10.108.250.34
+
+  gtpu:
+    - addr: 192.168.1.111
+
+  dnn_list:
+    - dnn: internet
+      cidr: 10.60.0.0/16

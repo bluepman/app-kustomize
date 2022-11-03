@@ -1,0 +1,78 @@
+info:
+  version: 1.0.1
+  description: NRF initial local configuration
+
+modules:
+  - ulib.Defaults
+
+configuration:
+  MongoDBName: "u5gc"
+  MongoDBUrl: "mongodb://u5gc-mongodb:27017"
+  DefaultServiceIP: "u5gc-scp-nrf"
+  sbi:
+    scheme: http
+    registerIPv4: u5gc-scp-nrf
+    bindingIPv4: 0.0.0.0
+    port: 8000
+    tls:
+      pem: ./config/TLS/nrf.pem
+      key: ./config/TLS/nrf.key
+  DefaultPlmnId:
+    mcc: "208"
+    mnc: "93"
+  serviceNameList:
+    - nnrf-nfm
+    - nnrf-disc
+
+logger:
+  NRF:
+    debugLevel: trace
+    ReportCaller: false
+
+# statistics item configuration
+statistic:
+  registry: "default"
+  items:
+    call: TransactionTimer
+    db: TransactionTimer
+
+# metrics reporter configuration
+metric:
+  default:
+    reporters:
+      # - class: "logger"
+      #   logger: default
+      #   logging-changed-only: true
+      #   interval: 10s
+      - class: "csv"
+        file-path: "/app/stats/nrf"
+        backup-previous: true
+        interval: 1s
+        counter:
+          use: true
+        transaction-request:
+          use: true
+        transaction-response:
+          use: true
+
+# ulib trace configuration
+# trace:
+#   default-service-name: "NRF"
+#   config-path: "/app/HOME/data/jaegertrace"
+
+# ulib logrus configuration
+logrus:
+  format: "text"
+  print-caller: true
+#config-file: "{{.NRF_LOGGER_PATH}}"
+  config-file:
+    loggers:
+      root:
+        level: INFO
+        appender:
+          - console
+    appenders:
+      console:
+        format: text
+        class: Console
+        print-caller: "true"

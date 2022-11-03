@@ -1,0 +1,52 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+- ../../base/scp
+
+
+images:
+- name: nrf_image
+  newName: camel.uangel.com:5000/u5gc/nrf
+  newTag: "v0.311"
+- name: scp_image
+  newName: camel.uangel.com:5000/u5gc/scp
+  newTag: "v0.2"
+
+patchesStrategicMerge:
+- 04_scp-deployment.yaml
+
+configMapGenerator:
+- name: u5gc-nrf-config
+  behavior: replace
+  files:
+  - config/nrfcfg.yaml
+- name: u5gc-scp-config
+  behavior: replace
+  files:
+  - config/uscp.conf
+  - config/jaegertrace.yaml
+- name: uemsub-data
+  files:
+  - config/em_exporter.xml
+  - config/uem_logger.conf
+  - config/uemsub.conf
+
+# patches:
+# - patch: |-
+#     - op: add
+#       path: /spec/template/spec/nodeSelector
+#       value: {kubernetes.io/hostname: mec-tb-worker}
+#   target:
+#     kind: Deployment
+#     labelSelector: "app=u5gc-scp"
+
+
+
+
+
+
+
+
+
+namespace: u5gc

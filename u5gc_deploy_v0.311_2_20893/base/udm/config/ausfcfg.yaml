@@ -1,0 +1,27 @@
+info:
+  version: 1.0.2
+  description: AUSF initial local configuration
+
+configuration:
+  sbi:
+    scheme: http
+    registerIPv4: u5gc-udm
+    bindingIPv4: 0.0.0.0
+    port: 8003
+    tls: # the local path of TLS key
+      pem: ./config/TLS/ausf.pem # AUSF TLS Certificate
+      key: ./config/TLS/ausf.key # AUSF TLS Private key
+  serviceNameList:
+    - nausf-auth
+  nrfUri: http://u5gc-scp-nrf:8000
+  plmnSupportList:
+    - mcc: 450
+      mnc: 90
+    - mcc: 123
+      mnc: 45
+  groupId: ausfGroup001  
+
+logger:
+  AUSF:
+    debugLevel: trace
+    ReportCaller: false

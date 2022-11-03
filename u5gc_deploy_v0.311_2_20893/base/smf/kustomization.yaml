@@ -1,0 +1,24 @@
+kind: Kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+
+resources:
+  - 01_smf-sa.yaml
+  - 02_smf-rbac.yaml
+  - 03_smf-service.yaml
+  - 04_smf-deployment.yaml
+
+secretGenerator:
+- name: u5gc-smf-tls-secret
+  files:
+  - cert/smf.pem
+  - cert/smf.key
+  type: "Opaque"
+
+# generatorOptions:
+#   disableNameSuffixHash: true
+
+configMapGenerator:
+- name: u5gc-smf-config
+  files:
+  - config/smfcfg.yaml
+  - config/uerouting.yaml

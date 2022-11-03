@@ -1,0 +1,61 @@
+kind: Kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+
+resources:
+- 01_amf-sa.yaml
+- 02_amf-rbac.yaml
+- 03_amf-service.yaml
+- 04_amf-deployment.yaml
+
+secretGenerator:
+- name: u5gc-amf-tls-secret
+  files:
+  - cert/amf.pem
+  - cert/amf.key
+  type: "Opaque"
+- name: u5gc-nssf-tls-secret
+  files:
+  - cert/nssf.pem
+  - cert/nssf.key
+  type: "Opaque"
+
+configMapGenerator:
+- name: u5gc-amf-config
+  files:
+  - config/amfcfg.yaml
+- name: u5gc-nssf-config
+  files:
+  - config/nssfcfg.yaml
+
+
+
+# patches:
+# - patch: |-
+#     - op: replace
+#       path: /spec/template/spec/containers/0/image
+#       value: camel.uangel.com:5000/u5gc/amf:latest
+#   target:
+#     kind: Deployment
+#     labelSelector: "app=u5gc-amf"
+    # <sample>
+    # - op: replace
+    #   path: /spec/template/spec/containers/0/image
+    #   value: camel.uangel.com:5000/u5gc/dev:latest
+    # - op: replace
+    #   path: /spec/template/spec/containers/0/image
+    #   value: camel.uangel.com:5000/u5gc/amf:latest
+    # - op: replace
+    #   path: /spec/template/spec/containers/0/imagePullPolicy
+    #   value: Always
+    # - op: replace
+    #   path: /spec/template/spec/containers/0/args
+    #   value: [/bin/sleep, infinity]
+    # - op: replace
+    #   path: /spec/template/spec/containers/0/args
+    #   value: [/bin/sh, -c, '/u5gc/amf -c /u5gc/config/amfcfg.yaml']
+    # - op: add
+    #   path: /spec/template/spec/containers/1
+    #   value: {name: tcpdump, image: corfr/tcpdump, command: [/bin/sleep, infinity]}
+    # - op: add
+    #   path: /spec/template/spec/nodeSelector
+    #   value: {kubernetes.io/hostname: k8sworker2}

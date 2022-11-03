@@ -1,0 +1,33 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+- ../../base/mongodb
+
+
+patchesStrategicMerge:
+- 03_mongodb-statefulset.yaml
+
+resources:
+- mongodb-volume.yaml
+
+
+# patches:
+# - patch: |-
+#     - op: add
+#       path: /spec/template/spec/nodeSelector
+#       value: {kubernetes.io/hostname: mec-tb-worker}
+#   target:
+#     kind: StatefulSet
+#     labelSelector: "app=u5gc-mongodb"
+
+
+
+
+
+
+
+
+
+
+namespace: u5gc

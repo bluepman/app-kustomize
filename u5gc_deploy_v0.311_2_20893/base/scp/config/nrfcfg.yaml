@@ -1,0 +1,27 @@
+info:
+  version: 1.0.1
+  description: NRF initial local configuration
+
+configuration:
+  MongoDBName: "u5gc"
+  MongoDBUrl: "mongodb://u5gc-mongodb:27017"
+  DefaultServiceIP: "u5gc-scp-nrf"
+  sbi:
+    scheme: http
+    registerIPv4: u5gc-scp-nrf
+    bindingIPv4: 0.0.0.0
+    port: 8000
+    tls:
+      pem: ./config/TLS/nrf.pem
+      key: ./config/TLS/nrf.key
+  DefaultPlmnId:
+    mcc: "450"
+    mnc: "90"
+  serviceNameList:
+    - nnrf-nfm
+    - nnrf-disc
+
+logger:
+  NRF:
+    debugLevel: trace
+    ReportCaller: false

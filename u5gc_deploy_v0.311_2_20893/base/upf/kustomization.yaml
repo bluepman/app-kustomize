@@ -1,0 +1,14 @@
+kind: Kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+
+resources:
+  - 01_upf-sa.yaml
+  - 02_upf-rbac.yaml
+  - 03_upf-service.yaml
+  - 04_upf-deployment.yaml
+
+configMapGenerator:
+- name: u5gc-upf-config
+  files:
+  - config/upfcfg.yaml
+  - config/upf-iptables.sh

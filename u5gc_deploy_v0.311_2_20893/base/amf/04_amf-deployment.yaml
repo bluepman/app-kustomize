@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: u5gc-amf
+  labels:
+    app: u5gc-amf
+    sliceidx: 6d3d79da-f781-4cd9-813a-dbdad01e01c0
+  annotations:
+    u5gc.org/nssi-id: '27394d25-dbf5-428e-8fc3-f5b2add67115'
+    u5gc.org/nsi-ids: '[ { "id": "4e6db941-47d6-4fce-9c71-f7eb35a75d03" } ]'
+    u5gc.org/supported-snssais: '[
+        { "st": 1,
+          "ssd": "010203",
+        },
+        { "st": 1,
+          "ssd": "112233",
+        } ]'
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: u5gc-amf
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: u5gc-amf
+    spec:
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+      containers:
+      - name: u5gc-amf
+        image: amf_image
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: false
+        volumeMounts:
+        - name: u5gc-amf-config
+          mountPath: /app/config
+        - name: u5gc-amf-cert
+          mountPath: /app/config/TLS
+        - name: tz-seoul
+          mountPath: /etc/localtime
+        ports:
+        - containerPort: 8001
+          name: u5gc-amf
+          protocol: TCP
+        - containerPort: 38412
+          name: u5gc-amf-n1n2
+          protocol: SCTP
+        args: [/bin/sh, -c, '/app/amf -c /app/config/amfcfg.yaml']
+      - name: u5gc-nssf
+        image: nssf_image
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: false
+        volumeMounts:
+        - name: u5gc-nssf-config
+          mountPath: /app/config
+        - name: u5gc-nssf-cert
+          mountPath: /app/config/TLS
+        - name: tz-seoul
+          mountPath: /etc/localtime
+        ports:
+        - containerPort: 8002
+          name: u5gc-nssf
+          protocol: TCP
+        args: [/bin/sh, -c, '/app/nssf -c /app/config/nssfcfg.yaml']
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      serviceAccountName: u5gc-amf-sa
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: u5gc-amf-cert
+          secret:
+            secretName: u5gc-amf-tls-secret
+        - name: u5gc-nssf-cert
+          secret:
+            secretName: u5gc-nssf-tls-secret
+        - name: u5gc-amf-config
+          configMap:
+            name: u5gc-amf-config
+        - name: u5gc-nssf-config
+          configMap:
+            name: u5gc-nssf-config
+        - name: tz-seoul
+          hostPath: 
+            path: /usr/share/zoneinfo/Asia/Seoul

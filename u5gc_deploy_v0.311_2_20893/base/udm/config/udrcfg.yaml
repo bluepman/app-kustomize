@@ -1,0 +1,22 @@
+info:
+  version: 1.0.1
+  description: UDR initial local configuration
+
+configuration:
+  sbi:
+    scheme: http
+    registerIPv4: u5gc-udm
+    bindingIPv4: 0.0.0.0
+    port: 8002
+    tls: # the local path of TLS key
+      pem: ./config/TLS/udr.pem # UDR TLS Certificate
+      key: ./config/TLS/udr.key # UDR TLS Private key
+  mongodb:
+    name: u5gc
+    url: mongodb://u5gc-mongodb:27017
+  nrfUri: http://u5gc-scp-nrf:8000
+
+logger:
+  UDR:
+    debugLevel: trace
+    ReportCaller: false

@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: u5gc-pcf
+  labels:
+    app: u5gc-pcf
+  annotations:
+    u5gc.org/nssi-id: '27394d25-dbf5-428e-8fc3-f5b2add67115'
+    u5gc.org/nsi-ids: '[ { "id": "4e6db941-47d6-4fce-9c71-f7eb35a75d03" } ]'
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: u5gc-pcf
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: u5gc-pcf
+    spec:
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+      containers:
+      - name: u5gc-pcf
+        image: pcf_image
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: false
+        volumeMounts:
+        - name: u5gc-pcf-config
+          mountPath: /app/config
+        - name: u5gc-pcf-cert
+          mountPath: /app/config/TLS
+        - name: tz-seoul
+          mountPath: /etc/localtime
+        ports:
+        - containerPort: 8000
+          name: u5gc-pcf
+          protocol: TCP
+        args: [/bin/sh, -c, '/app/pcf -c /app/config/pcfcfg.yaml']
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      serviceAccountName: u5gc-pcf-sa
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: u5gc-pcf-cert
+          secret:
+            secretName: u5gc-pcf-tls-secret
+        - name: u5gc-pcf-config
+          configMap:
+            name: u5gc-pcf-config
+        - name: tz-seoul
+          hostPath: 
+            path: /usr/share/zoneinfo/Asia/Seoul

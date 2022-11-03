@@ -1,0 +1,149 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: u5gc-scp
+  labels:
+    app: u5gc-scp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: u5gc-scp
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: u5gc-scp
+    spec:
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+      containers:
+        - name: u5gc-nrf
+          image: nrf_image
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: false
+          volumeMounts:
+            - name: u5gc-nrf-config
+              mountPath: /app/config
+            - name: u5gc-nrf-cert
+              mountPath: /app/config/TLS
+            - name: u5gc-stats
+              mountPath: /app/stats
+            - name: tz-seoul
+              mountPath: /etc/localtime
+          ports:
+            - containerPort: 8000
+              name: u5gc-nrf
+              protocol: TCP
+          args: [/bin/sh, -c, '/app/nrf -c /app/config/nrfcfg.yaml']
+        - name: u5gc-scp
+          image: scp_image
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: false
+          volumeMounts:
+            - name: u5gc-scp-config
+              mountPath: /app/config
+            - name: u5gc-scp-cert
+              mountPath: /app/config/TLS
+            - name: u5gc-stats
+              mountPath: /app/stats
+            - name: tz-seoul
+              mountPath: /etc/localtime
+            - name: log-volume
+              mountPath: /app/logs
+          ports:
+            - containerPort: 8080
+              name: scp-http
+            - containerPort: 8443
+              name: scp-https
+            - containerPort: 9060
+              name: scp-noti-http
+            - containerPort: 9061
+              name: scp-subs-http
+            - containerPort: 9062
+              name: scp-ctrl-http
+          env:
+            - name: USCP_HOME
+              value: /app
+            - name: USCP_CONFIG_FILE
+              value: /app/config/uscp.conf
+            - name: USCP_NAMESPACE
+              value: u5gc
+            - name: CLICOLOR_FORCE
+              value: "1"
+          args: [/bin/sh, -c, '/app/uscpagent']
+        - name: "uem-emsubagt"
+          image: camel.uangel.com:5000/uemsub/uemsub:v1.0.1
+          imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: 1
+              memory: 1Gi
+            requests:
+              cpu: 1
+              memory: 512Mi
+          command:
+            - 'sh'
+            - '-c'
+            - >-
+              echo ''Setting config file''
+              && cp /tmp/data/* /home/app/data/.
+              && /home/app/bin/uem
+          ports:
+            - containerPort: 9292
+          env:
+            - name: UEM_CONFIG_FILE
+              value: "/home/app/data/uemsub.conf"
+            - name: UASYS_HOME
+              value: "/home/app"
+            - name: MYSQL_ADDR
+              value: "mariadb.ucdb.svc.cluster.local"
+            - name: MYSQL_PORT
+              value: "3306"
+            - name: EM_SERVICE
+              value: "ems-uem"
+            - name: EM_HTTP_PORT
+              value: "9191"
+            - name: MY_GROUP
+              value: "SCP_NRF"
+            - name: TRACE_ENABLED
+              value: "false"
+          volumeMounts:
+            - name: u5gc-stats
+              mountPath: /app/stat
+            - name: data-volume
+              mountPath: /tmp/data
+            - name: tz-seoul
+              mountPath: /etc/localtime
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      serviceAccountName: u5gc-scp-sa
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: u5gc-nrf-cert
+          secret:
+            secretName: u5gc-nrf-tls-secret
+        - name: u5gc-nrf-config
+          configMap:
+            name: u5gc-nrf-config
+        - name: u5gc-scp-config
+          configMap:
+            name: u5gc-scp-config
+        - name: u5gc-scp-cert
+          secret:
+            secretName: u5gc-scp-tls-secret
+        - name: u5gc-stats
+          emptyDir: {}
+        - name: data-volume
+          configMap:
+            name: uemsub-data
+        - name: tz-seoul
+          hostPath:
+            path: /usr/share/zoneinfo/Asia/Seoul
+        - name: log-volume
+          emptyDir: {}

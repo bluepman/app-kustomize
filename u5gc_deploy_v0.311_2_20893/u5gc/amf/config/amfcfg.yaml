@@ -1,0 +1,163 @@
+info:
+  version: 1.0.3
+  description: AMF initial local configuration
+
+modules:
+  - ulib.Defaults
+
+configuration:
+  amfName: AMF
+  ngapIpList:
+    - 0.0.0.0
+  sbi:
+    scheme: http
+    registerIPv4: u5gc-amf
+    bindingIPv4: 0.0.0.0
+    port: 8001
+    tls:
+      pem: ./config/TLS/amf.pem
+      key: ./config/TLS/amf.key
+  serviceNameList:
+    - namf-comm
+    - namf-evts
+    - namf-mt
+    - namf-loc
+    - namf-oam
+  servedGuamiList:
+    - plmnId:
+        mcc: 208
+        mnc: 93
+      amfId: cafe00
+  supportTaiList:
+    - plmnId:
+        mcc: 208
+        mnc: 93
+      tac: 1
+  plmnSupportList:
+    - plmnId:
+        mcc: 208
+        mnc: 93
+      snssaiList:
+        - sst: 1
+          sd: 010203
+        - sst: 1
+          sd: 112233
+  supportDnnList:
+    - internet
+    - internet2
+    - ims
+  nrfUri: http://u5gc-scp-nrf:8000
+  scpUri: http://u5gc-scp-nrf:8080
+  useIndirectMode: true
+  useDelegateDiscovery: true
+  security:
+    integrityOrder:
+      - NIA2
+    cipheringOrder:
+      - NEA0
+  networkName:
+    full: uangel5GC
+    short: u5gc
+  locality: area1
+  networkFeatureSupport5GS:
+    enable: true
+    length: 1
+    imsVoPS: 0
+    emc: 0
+    emf: 0
+    iwkN26: 0
+    mpsi: 0
+    emcN3: 0
+    mcsi: 0
+  t3502Value: 720
+  t3512Value: 3600
+  non3gppDeregistrationTimerValue: 3240
+  t3513:
+    enable: true
+    expireTime: 6s
+    maxRetryTimes: 4
+  t3522:
+    enable: true
+    expireTime: 6s
+    maxRetryTimes: 4
+  t3550:
+    enable: true
+    expireTime: 6s
+    maxRetryTimes: 4
+  t3560:
+    enable: true
+    expireTime: 6s
+    maxRetryTimes: 4
+  t3565:
+    enable: true
+    expireTime: 6s
+    maxRetryTimes: 4
+  t3570:
+    enable: true
+    expireTime: 6s
+    maxRetryTimes: 4
+
+logger:
+  AMF:
+    debugLevel: warn
+    ReportCaller: false
+  NAS:
+    debugLevel: warn
+    ReportCaller: false
+  FSM:
+    debugLevel: warn
+    ReportCaller: false
+  NGAP:
+    debugLevel: warn
+    ReportCaller: false
+  Aper:
+    debugLevel: warn
+    ReportCaller: false
+
+# statistics item configuration
+statistic:
+  registry: "default"
+  items:
+    call: TransactionTimer
+    db: TransactionTimer
+
+# metrics reporter configuration
+metric:
+  default:
+    reporters:
+      # - class: "logger"
+      #   logger: default
+      #   logging-changed-only: true
+      #   interval: 10s
+      - class: "csv"
+        file-path: "/app/stats/amf"
+        backup-previous: true
+        interval: 1s
+        counter:
+          use: true
+        transaction-request:
+          use: true
+        transaction-response:
+          use: true
+
+# ulib trace configuration
+# trace:
+#   default-service-name: "AMF"
+#   config-path: "/app/HOME/data/jaegertrace"
+
+# ulib logrus configuration
+logrus:
+  format: "text"
+  print-caller: true
+#config-file: "{{.AMF_LOGGER_PATH}}"
+  config-file:
+    loggers:
+      root:
+        level: INFO
+        appender:
+          - console
+    appenders:
+      console:
+        format: text
+        class: Console
+        print-caller: "true"

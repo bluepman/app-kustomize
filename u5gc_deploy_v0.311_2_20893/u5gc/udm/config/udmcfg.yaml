@@ -1,0 +1,88 @@
+info:
+  version: 1.0.2
+  description: UDM initial local configuration
+
+modules:
+  - ulib.Defaults
+
+configuration:
+  serviceNameList:
+    - nudm-sdm
+    - nudm-uecm
+    - nudm-ueau
+    - nudm-ee
+    - nudm-pp
+  sbi:
+    scheme: http
+    registerIPv4: u5gc-udm
+    bindingIPv4: 0.0.0.0
+    port: 8001
+    tls:
+      pem: ./config/TLS/udm.pem
+      key: ./config/TLS/udm.key
+  nrfUri: http://u5gc-scp-nrf:8000 # scp pod 의 nrf container 로 접속 (서비스로 접속)
+  scpUri: http://u5gc-scp-nrf:8080 # scp pod 의 scp container 로 접속 (서비스로 접속)
+  useIndirectMode: true            # scp 사용 모드 direct / indrect
+  useDelegateDiscovery: true       # scp 사용시 discovery 위임 여부 
+ 
+  # test data set from TS33501-f60 Annex C.4
+  SuciProfile: # Home Network Public Key ID = slice index +1
+    - ProtectionScheme: 1 # Protect Scheme: Profile A
+      PrivateKey: c53c22208b61860b06c62e5406a7b330c2b577aa5558981510d128247d38bd1d
+      PublicKey: 5a8d38864820197c3394b92613b20b91633cbd897119273bf8e4a6f4eec0a650
+    - ProtectionScheme: 2 # Protect Scheme: Profile B
+      PrivateKey: F1AB1074477EBCC7F554EA1C5FC368B1616730155E0041AC447D6301975FECDA
+      PublicKey: 0472DA71976234CE833A6907425867B82E074D44EF907DFB4B3E21C1C2256EBCD15A7DED52FCBB097A4ED250E036C7B9C8C7004C4EEDC4F068CD7BF8D3F900E3B4
+ 
+logger:
+  UDM:
+    debugLevel: trace
+    ReportCaller: false
+
+# statistics item configuration
+statistic:
+  registry: "default"
+  items:
+    call: TransactionTimer
+    db: TransactionTimer
+
+# metrics reporter configuration
+metric:
+  default:
+    reporters:
+      # - class: "logger"
+      #   logger: default
+      #   logging-changed-only: true
+      #   interval: 10s
+      - class: "csv"
+        file-path: "/app/stats/udm"
+        backup-previous: true
+        interval: 1s
+        counter:
+          use: true
+        transaction-request:
+          use: true
+        transaction-response:
+          use: true
+
+# ulib trace configuration
+#trace:
+#  default-service-name: "UDM"
+#  config-path: "/app/HOME/data/jaegertrace"
+
+# ulib logrus configuration
+logrus:
+  format: "text"
+  print-caller: true
+#config-file: "{{.UDM_LOGGER_PATH}}"
+  config-file:
+    loggers:
+      root:
+        level: INFO
+        appender:
+          - console
+    appenders:
+      console:
+        format: text
+        class: Console
+        print-caller: "true"

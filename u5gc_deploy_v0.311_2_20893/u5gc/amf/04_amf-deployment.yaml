@@ -1,0 +1,132 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: u5gc-amf
+  labels:
+    app: u5gc-amf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: u5gc-amf
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: u5gc-amf
+    spec:
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+      containers:
+        - name: u5gc-amf
+          image: amf_image
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: false
+          volumeMounts:
+            - name: u5gc-amf-config
+              mountPath: /app/config
+            - name: u5gc-amf-cert
+              mountPath: /app/config/TLS
+            - name: u5gc-stats
+              mountPath: /app/stats
+            - name: tz-seoul
+              mountPath: /etc/localtime
+          ports:
+            - containerPort: 8001
+              name: u5gc-amf
+              protocol: TCP
+            - containerPort: 38412
+              name: u5gc-amf-n1n2
+              protocol: SCTP
+          args: [/bin/sh, -c, '/app/amf -c /app/config/amfcfg.yaml']
+        - name: u5gc-nssf
+          image: nssf_image
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: false
+          volumeMounts:
+            - name: u5gc-nssf-config
+              mountPath: /app/config
+            - name: u5gc-nssf-cert
+              mountPath: /app/config/TLS
+            - name: u5gc-stats
+              mountPath: /app/stats
+            - name: tz-seoul
+              mountPath: /etc/localtime
+          ports:
+            - containerPort: 8002
+              name: u5gc-nssf
+              protocol: TCP
+          args: [/bin/sh, -c, '/app/nssf -c /app/config/nssfcfg.yaml']
+        - name: "uem-emsubagt"
+          image: camel.uangel.com:5000/uemsub/uemsub:v1.0.1
+          imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: 1
+              memory: 1Gi
+            requests:
+              cpu: 1
+              memory: 512Mi
+          command:
+            - 'sh'
+            - '-c'
+            - >-
+              echo ''Setting config file''
+              && cp /tmp/data/* /home/app/data/.
+              && /home/app/bin/uem
+          ports:
+            - containerPort: 9292
+          env:
+            - name: UEM_CONFIG_FILE
+              value: "/home/app/data/uemsub.conf"
+            - name: UASYS_HOME
+              value: "/home/app"
+            - name: MYSQL_ADDR
+              value: "mariadb.ucdb.svc.cluster.local"
+            - name: MYSQL_PORT
+              value: "3306"
+            - name: EM_SERVICE
+              value: "ems-uem"
+            - name: EM_HTTP_PORT
+              value: "9191"
+            - name: MY_GROUP
+              value: "AMF_NSSF"
+            - name: TRACE_ENABLED
+              value: "false"
+          volumeMounts:
+            - name: u5gc-stats
+              mountPath: /app/stat
+            - name: data-volume
+              mountPath: /tmp/data
+            - name: tz-seoul
+              mountPath: /etc/localtime
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      serviceAccountName: u5gc-amf-sa
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: u5gc-amf-cert
+          secret:
+            secretName: u5gc-amf-tls-secret
+        - name: u5gc-nssf-cert
+          secret:
+            secretName: u5gc-nssf-tls-secret
+        - name: u5gc-amf-config
+          configMap:
+            name: u5gc-amf-config
+        - name: u5gc-nssf-config
+          configMap:
+            name: u5gc-nssf-config
+        - name: u5gc-stats
+          emptyDir: {}
+        - name: data-volume
+          configMap:
+            name: uemsub-data
+        - name: tz-seoul
+          hostPath:
+            path: /usr/share/zoneinfo/Asia/Seoul

@@ -1,0 +1,12 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: u5gc-mongodb
+spec:
+  serviceName: u5gc-mongodb
+  template:
+    spec:
+      volumes:
+      - name: mongo-persistent-storage
+        persistentVolumeClaim:
+          claimName: mongodb-pv-claim

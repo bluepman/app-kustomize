@@ -1,0 +1,184 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: u5gc-scp-config
+data:
+  uscp.conf: |
+    modules = [
+      ulib.Defaults
+      scpcli.Defaults
+      upolicy.Defaults
+      echolib.Defaults
+      subsmgr.Subscriber
+      scpcli.NRFClient
+      subsmgr.Defaults
+      uscp.agent.Defaults
+      uscp.controller.Server
+      uscp.FileTraceChecker
+      uscp.auth.AccessTokenCreator
+      scpcli.DirectModule.Embedding
+      echolib.StartAllServer
+      ulib.ActorSystem
+      ulib.ProcStatWatcher
+      ulib.Trace
+      ulib.FileResolver
+    ]
+
+    uscp {
+      http2 = {
+      	verbose-logs = false
+      }
+      controller = {
+      	servers = [
+      		"http://0.0.0.0:9062"
+      	]
+      	service = {
+      		namespace = "default"
+      		namespace = ${?USCP_NAMESPACE}
+      		name = "uscp-ctlsvr-svc"
+      		replicas = 3
+      		pod-name = "uscp-ctlsvr"
+      		port = 9062
+      	}
+      	load-info-send-period=5s
+      	load-info-validity-time=10s
+      	nrf-add-peer = false 
+      }
+    }
+
+    runtime {}
+
+    service {
+      my-profile-file=/u5gc/config/scp-profile.json
+    }
+
+    scpcli {
+      re-discover-interval = 1s
+      support-unknown-discquery-header = false
+    }
+
+    nrfclient {
+      nrf {
+        uri = "http://u5gc-scp-nrf:8000"
+      }
+      default-heart-beat-time = 100s
+    }
+
+    subsmgr {
+      servers = [
+        "ws://localhost:9061/ws"
+      ]
+      service = {
+        namespace = "default"
+        namespace = ${?USCP_NAMESPACE}
+        name = "uscp-ctlsvr-subsmgr-svc"
+        replicas = 3
+        pod-name = "uscp-ctlsvr"
+        port = 9061
+      }
+      nfservice = {}
+      http = {
+        port = 9061
+        port = ${?USCP_CTLSVR_SUBSMGR_HTTP_PORT}
+      }
+    }
+
+    subscriber {
+      reconnect-count = 3
+    }
+
+    noti-server {
+      http = {
+        address = "localhost" #SHOULD BE SAME WITH ONE OF SERVERS
+        port = 9060
+        port = ${?USCP_CTLSVR_NOTI_HTTP_PORT}
+      }
+      servers = [
+        "http://localhost:9060"
+      ]
+      service = {
+        name = "uscp-ctlsvr-svc"
+        replicas = 3
+        pod-name = "uscp-ctlsvr"
+        port = 9060
+        port = ${?USCP_CTLSVR_NOTI_HTTP_PORT}
+      }
+    }
+
+    http-servers {
+      uscp-agent-http {
+        port = 8080
+        port = ${?USCP_AGENT_HTTP_PORT}
+        tls = false
+        server-for = nf
+        services {
+        	uscp-agent { }
+        }
+      }
+      uscp-agent-https {
+        port = 8443
+        port = ${?USCP_AGENT_HTTPS_PORT}
+        tls = true
+        server-for = nf
+        services {
+          uscp-agent { }
+        }
+      }
+      uscp-controller-http {
+        port = 9062
+      	port = ${?USCP_CTLSVR_CONTROLLER_HTTP_PORT}
+      	tls = false
+      	server-for = internal
+      	services {
+      		uscp-controller { }
+      	}
+      }
+    }
+
+    http-client { }
+
+    cert-store {
+      common-name = "u5gc-scp"
+      issuer = unrf
+      nf-instance-id = acd21930-5896-4d39-8038-cfde2c10d657
+      nf-type = SCP
+      PLMN = {
+      	mcc = "450"
+      	mnc = "90"
+      }
+      peer-certs-file = /app/config/TLS/camel_git_cert.pem
+      named {
+      	unrf {
+      		cert-file = /app/config/TLS/unrf_cert.pem
+      		key-file = /app/config/TLS/unrf_key.pem
+      	}
+      }
+    }
+
+    ulib-resolver {
+      service-file = /app/config/services.conf
+    }
+
+    statistic {
+      registry = "default"
+      items {
+      	call : TransactionTimer
+      	db : TransactionTimer
+      }
+    }
+
+    metric {
+      default {
+        reporters = [ ]
+      }
+    }
+
+    trace {
+      default-service-name = "USCP"
+     	config-path =  /app/config/jaegertrace.yaml
+    }
+
+    logrus {
+      format = "text"
+      config-file =  /app/config/logger.conf
+    }

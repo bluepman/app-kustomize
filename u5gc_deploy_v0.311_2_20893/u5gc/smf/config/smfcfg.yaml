@@ -1,0 +1,151 @@
+info:
+  version: 1.0.2
+  description: SMF initial local configuration
+
+modules:
+  - ulib.Defaults
+
+configuration:
+  smfName: SMF
+  specMajorVersion: 16 # 3GPP specification release major version
+  sbi:
+    scheme: http
+    registerIPv4: u5gc-smf
+    bindingIPv4: 0.0.0.0
+    port: 8000
+    tls:
+      key: ./config/TLS/smf.key
+      pem: ./config/TLS/smf.pem
+  serviceNameList:
+    - nsmf-pdusession
+    - nsmf-event-exposure
+    - nsmf-oam
+  snssaiInfos:
+    - sNssai:
+        sst: 1
+        sd: 010203
+      dnnInfos:
+        - dnn: internet
+          dns:
+            ipv4: 8.8.8.8
+        - dnn: internet2
+          dns:
+            ipv4: 8.8.8.8
+        - dnn: ims
+          dns:
+            ipv4: 8.8.8.8
+  plmnList:
+    - mcc: "208"
+      mnc: "93"
+  locality: area1
+  pfcp:
+    addr: "100.100.100.22"
+    listenaddr: 0.0.0.0
+    heartbeatTime: 60000
+  userplaneInformation:
+    upNodes:
+      gNB:
+        type: AN
+      UPF:
+        type: UPF
+        nodeID: "100.100.100.30"
+        addr: "100.100.100.30"
+        sNssaiUpfInfos:
+          - sNssai:
+              sst: 1
+              sd: 010203
+            dnnUpfInfoList:
+              - dnn: internet
+                pools:
+                  - cidr: "10.60.0.0/18"
+              - dnn: internet2
+                pools:
+                  - cidr: "10.60.64.0/18"
+              - dnn: ims
+                pools:
+                  - cidr: "10.60.128.0/18"
+        interfaces:
+          - interfaceType: N3
+            endpoints:
+              - "172.10.6.30"
+            networkInstance: internet
+          - interfaceType: N3
+            endpoints:
+              - "172.10.6.30"
+            networkInstance: internet2
+          - interfaceType: N3
+            endpoints:
+              - "172.10.6.30"
+            networkInstance: ims
+    links:
+      - A: gNB
+        B: UPF
+  nrfUri: http://u5gc-scp-nrf:8000 # scp pod 의 nrf container 로 접속 (서비스로 접속)
+  scpUri: http://u5gc-scp-nrf:8080 # scp pod 의 scp container 로 접속 (서비스로 접속)
+  useIndirectMode: true            # scp 사용 모드 direct / indrect
+  useDelegateDiscovery: true       # scp 사용시 discovery 위임 여부
+
+logger:
+  SMF:
+    debugLevel: trace
+    ReportCaller: false
+  NAS:
+    debugLevel: trace
+    ReportCaller: false
+  NGAP:
+    debugLevel: trace
+    ReportCaller: false
+  Aper:
+    debugLevel: trace
+    ReportCaller: false
+  PFCP:
+    debugLevel: trace
+    ReportCaller: false
+
+# statistics item configuration
+statistic:
+  registry: "default"
+  items:
+    call: TransactionTimer
+    db: TransactionTimer
+
+# metrics reporter configuration
+metric:
+  default:
+    reporters:
+      # - class: "logger"
+      #   logger: default
+      #   logging-changed-only: true
+      #   interval: 10s
+      - class: "csv"
+        file-path: "/app/stats/smf"
+        backup-previous: true
+        interval: 1s
+        counter:
+          use: true
+        transaction-request:
+          use: true
+        transaction-response:
+          use: true
+
+# ulib trace configuration
+#trace:
+#  default-service-name: "SMF"
+#  config-path: "/app/data/jaegertrace"
+
+# ulib logrus configuration
+logrus:
+  format: "text"
+  print-caller: true
+#config-file: "{{.SMF_LOGGER_PATH}}"
+  config-file:
+    loggers:
+      root:
+        level: INFO
+        appender:
+          - console
+    appenders:
+      console:
+        format: text
+        class: Console
+        print-caller: "true"

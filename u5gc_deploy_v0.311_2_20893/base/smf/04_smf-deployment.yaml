@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: u5gc-smf
+  labels:
+    app: u5gc-smf
+    sliceidx: 6d3d79da-f781-4cd9-813a-dbdad01e01c0
+  annotations:
+    u5gc.org/nssi-id: '27394d25-dbf5-428e-8fc3-f5b2add67115'
+    u5gc.org/nsi-ids: '[ { "id": "4e6db941-47d6-4fce-9c71-f7eb35a75d03" }, ]'
+    u5gc.org/supported-snssais: '[
+        { "st": 1,
+          "ssd": "010203",
+        },
+        { "st": 1,
+          "ssd": "112233",
+        } ]'
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: u5gc-smf
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: u5gc-smf
+    spec:
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+      containers:
+      - name: u5gc-smf
+        image: smf_image
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: u5gc-smf-config
+          mountPath: /app/config
+        - name: u5gc-smf-cert
+          mountPath: /app/config/TLS
+        - name: tz-seoul
+          mountPath: /etc/localtime
+        ports:
+        - containerPort: 8000
+          name: if-sbi
+          protocol: TCP
+        - containerPort: 8805
+          name: if-n4
+          protocol: UDP
+        env:
+        - name: EXT_IP
+          value: u5gc-smf
+        - name: UPF_ID
+          value: 10.108.250.34
+        - name: UPF_IP
+          value: 10.108.250.34
+        - name: UE_IP_CIDR
+          value: 10.20.0.0/16
+        args: [/bin/sh, -c, '/app/smf -c /app/config/smfcfg.yaml']
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      serviceAccountName: u5gc-smf-sa
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: u5gc-smf-cert
+          secret:
+            secretName: u5gc-smf-tls-secret
+        - name: u5gc-smf-config
+          configMap:
+            name: u5gc-smf-config
+        - name: tz-seoul
+          hostPath: 
+            path: /usr/share/zoneinfo/Asia/Seoul

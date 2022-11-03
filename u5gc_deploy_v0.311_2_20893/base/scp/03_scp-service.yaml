@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: u5gc-scp-nrf
+  name: u5gc-scp-nrf
+spec:
+  type: ClusterIP
+  selector:
+    app: u5gc-scp
+  ports:
+  - name: scp-http
+    port: 8080
+    targetPort: 8080
+  - name: scp-https
+    port: 8443
+    targetPort: 8443
+  - name: scp-noti-http
+    port: 9060
+    targetPort: 9060
+  - name: scp-subs-http
+    port: 9061
+    targetPort: 9061
+  - name: scp-ctrl-http
+    port: 9062
+    targetPort: 9062
+  - name: nrf-sbi
+    port: 8000
+    targetPort: 8000

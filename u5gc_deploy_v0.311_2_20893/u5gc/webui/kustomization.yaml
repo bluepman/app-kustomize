@@ -1,0 +1,27 @@
+bases:
+- ../../base/webui
+
+
+images:
+- name: webui_image
+  newName: camel.uangel.com:5000/u5gc/webui
+  newTag: "v0.311"
+
+# patches:
+# - patch: |-
+#     - op: add
+#       path: /spec/template/spec/nodeSelector
+#       value: {kubernetes.io/hostname: mec-tb-worker}
+#   target:
+#     kind: Deployment
+#     labelSelector: "app=u5gc-webui"
+
+
+
+
+
+
+
+
+
+namespace: u5gc

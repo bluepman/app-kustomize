@@ -1,0 +1,45 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+- ../../base/smf
+
+
+images:
+- name: smf_image
+  newName: camel.uangel.com:5000/u5gc/smf
+  newTag: "v0.311"
+
+patchesStrategicMerge:
+- 04_smf-deployment.yaml
+
+configMapGenerator:
+- name: u5gc-smf-config
+  behavior: merge
+  files:
+  - config/smfcfg.yaml
+- name: uemsub-data
+  files:
+  - config/em_exporter.xml
+  - config/uem_logger.conf
+  - config/uemsub.conf
+
+
+# patches:
+# - patch: |-
+#     - op: add
+#       path: /spec/template/spec/nodeSelector
+#       value: {kubernetes.io/hostname: mec-tb-worker}
+#   target:
+#     kind: Deployment
+#     labelSelector: "app=u5gc-smf"
+
+
+
+
+
+
+
+
+
+namespace: u5gc

@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: u5gc-udm
+  labels:
+    app: u5gc-udm
+  annotations:
+    u5gc.org/nssi-id: '27394d25-dbf5-428e-8fc3-f5b2add67115'
+    u5gc.org/nsi-ids: '[ { "id": "4e6db941-47d6-4fce-9c71-f7eb35a75d03" }, ]'
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: u5gc-udm
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: u5gc-udm
+    spec:
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+      containers:
+      - name: u5gc-udm
+        image: udm_image
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: false
+        volumeMounts:
+        - name: u5gc-udm-config
+          mountPath: /app/config
+        - name: u5gc-udm-cert
+          mountPath: /app/config/TLS
+        - name: tz-seoul
+          mountPath: /etc/localtime
+        ports:
+        - containerPort: 8001
+          name: u5gc-udm
+          protocol: TCP
+        args: [/bin/sh, -c, '/app/udm -c /app/config/udmcfg.yaml']
+      - name: u5gc-udr
+        image: udr_image
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: false
+        volumeMounts:
+        - name: u5gc-udr-config
+          mountPath: /app/config
+        - name: u5gc-udr-cert
+          mountPath: /app/config/TLS
+        - name: tz-seoul
+          mountPath: /etc/localtime
+        ports:
+        - containerPort: 8002
+          name: u5gc-udr
+          protocol: TCP
+        args: [/bin/sh, -c, '/app/udr -c /app/config/udrcfg.yaml']
+      - name: u5gc-ausf
+        image: ausf_image
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: u5gc-ausf-config
+          mountPath: /app/config
+        - name: u5gc-ausf-cert
+          mountPath: /app/config/TLS
+        - name: tz-seoul
+          mountPath: /etc/localtime
+        ports:
+        - containerPort: 8003
+          name: u5gc-ausf
+          protocol: TCP
+        args: [/bin/sh, -c, '/app/ausf -c /app/config/ausfcfg.yaml']
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      serviceAccountName: u5gc-udm-sa
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: u5gc-udm-cert
+          secret:
+            secretName: u5gc-udm-tls-secret
+        - name: u5gc-udr-cert
+          secret:
+            secretName: u5gc-udr-tls-secret
+        - name: u5gc-ausf-cert
+          secret:
+            secretName: u5gc-ausf-tls-secret
+        - name: u5gc-udm-config
+          configMap:
+            name: u5gc-udm-config
+        - name: u5gc-udr-config
+          configMap:
+            name: u5gc-udr-config
+        - name: u5gc-ausf-config
+          configMap:
+            name: u5gc-ausf-config
+        - name: tz-seoul
+          hostPath:
+            path: /usr/share/zoneinfo/Asia/Seoul

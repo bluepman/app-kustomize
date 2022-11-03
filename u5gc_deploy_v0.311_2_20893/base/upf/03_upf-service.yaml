@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: u5gc-upf
+  name: u5gc-upf
+spec:
+  type: NodePort
+  ports:
+  - name: u5gc-upf-n3
+    nodePort: 2152
+    port: 2152
+    protocol: UDP
+    targetPort: 2152
+  - name: u5gc-upf-n4
+    nodePort: 18805
+    port:  8805
+    protocol: UDP
+    targetPort: 8805
+  selector:
+    app: u5gc-upf

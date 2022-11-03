@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: u5gc-webui-config
+data:
+  webuicfg.yaml: |
+    info:
+      version: 1.0.0
+      description: WebUI initial local configuration
+    
+    configuration:
+      mongodb:
+        name: u5gc
+        url: mongodb://u5gc-mongodb:27017
+    # the kind of log output
+    # debugLevel: how detailed to output, value: trace, debug, info, warn, error, fatal, panic
+    # ReportCaller: enable the caller report or not, value: true or false
+    logger:
+      WEBUI:
+        debugLevel: info
+        ReportCaller: true
+      PathUtil:
+        debugLevel: info
+        ReportCaller: false
+      OpenApi:
+        debugLevel: info
+        ReportCaller: false
+      MongoDBLibrary:
+        debugLevel: info
+        ReportCaller: false

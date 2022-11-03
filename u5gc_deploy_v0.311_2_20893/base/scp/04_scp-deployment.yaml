@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: u5gc-scp
+  labels:
+    app: u5gc-scp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: u5gc-scp
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: u5gc-scp
+    spec:
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+      containers:
+        - name: u5gc-nrf
+          image: nrf_image
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: false
+          volumeMounts:
+            - name: u5gc-nrf-config
+              mountPath: /app/config
+            - name: u5gc-nrf-cert
+              mountPath: /app/config/TLS
+            - name: tz-seoul
+              mountPath: /etc/localtime
+          ports:
+            - containerPort: 8000
+              name: u5gc-nrf
+              protocol: TCP
+          args: [/bin/sh, -c, '/app/nrf -c /app/config/nrfcfg.yaml']
+        - name: u5gc-scp
+          image: scp_image
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: false
+          volumeMounts:
+            - name: u5gc-scp-config
+              mountPath: /app/config
+            - name: u5gc-scp-cert
+              mountPath: /app/config/TLS
+            - name: tz-seoul
+              mountPath: /etc/localtime
+            - name: log-volume
+              mountPath: /app/logs
+          ports:
+            - containerPort: 8080
+              name: scp-http
+            - containerPort: 8443
+              name: scp-https
+            - containerPort: 9060
+              name: scp-noti-http
+            - containerPort: 9061
+              name: scp-subs-http
+            - containerPort: 9062
+              name: scp-ctrl-http
+          env:
+            - name: USCP_HOME
+              value: /app
+            - name: USCP_CONFIG_FILE
+              value: /app/config/uscp.conf
+            - name: USCP_NAMESPACE
+              value: u5gc
+            - name: CLICOLOR_FORCE
+              value: "1"
+          args: [/bin/sh, -c, '/app/uscpagent']
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      serviceAccountName: u5gc-scp-sa
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: u5gc-nrf-cert
+          secret:
+            secretName: u5gc-nrf-tls-secret
+        - name: u5gc-nrf-config
+          configMap:
+            name: u5gc-nrf-config
+        - name: u5gc-scp-config
+          configMap:
+            name: u5gc-scp-config
+        - name: u5gc-scp-cert
+          secret:
+            secretName: u5gc-scp-tls-secret
+        - name: tz-seoul
+          hostPath: 
+            path: /usr/share/zoneinfo/Asia/Seoul
+        - name: log-volume
+          emptyDir: {}

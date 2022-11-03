@@ -1,0 +1,138 @@
+amf:
+  amfcfg.yaml:
+    configuration:
+      sbi:
+        port: 8001 # 한 pod 에 두개의 nf 가 기동되어 port 번호를 바꿈
+      nrfUri: http://u5gc-scp-nrf:8000 # scp pod 의 nrf container 로 접속 (서비스로 접속)
+      scpUri: http://u5gc-scp-nrf:8080 # scp pod 의 scp container 로 접속 (서비스로 접속)
+      useIndirectMode: true            # scp 사용 모드 direct / indrect
+      useDelegateDiscovery: true       # scp 사용시 discovery 위임 여부 
+
+  service.yaml:
+    spec:
+      type: NodePort # N1/N2 의 sctp 연동을 위해 nodeport 로 설정, 필요에  따라 service 분리도 고려 
+      ports: 
+      - name: u5gc-sctp-amf # sctp 포트 설정 
+        nodePort : 38412
+        port: 38412
+        protocol: SCTP
+        targetPort: 38412
+
+  nssfcfg.yaml:
+    configuration:
+      sbi:
+        port: 8002 # 한 pod 에 두개의 nf 가 기동되어 port 번호를 바꿈
+      nrfUri: http://u5gc-scp-nrf:8000 # scp pod 의 nrf container 로 접속 (서비스로 접속)
+
+pcf:
+  pcfcfg.yaml:
+    configuration:
+      nrfUri: http://u5gc-scp-nrf:8000 # scp pod 의 nrf container 로 접속 (서비스로 접속)
+      scpUri: http://u5gc-scp-nrf:8080 # scp pod 의 scp container 로 접속 (서비스로 접속)
+      useIndirectMode: true            # scp 사용 모드 direct / indrect
+      useDelegateDiscovery: true       # scp 사용시 discovery 위임 여부 
+
+scp: 
+  uscp.conf: 
+    nrfclient: 
+      nrf: 
+        uri: "http://u5gc-scp-nrf:8000" # scp pod 의 nrf container 로 접속 (서비스로 접속) 
+    http-servers:
+      uscp-agent-http: # scp http 서버 정보
+        port: 8080 # listen port 정보, ${?USCP_AGENT_HTTP_PORT} 로 변경 가능 
+      uscp-agent-https: # scp https 서버 정보
+        port: 8443 # listen port 정보, ${?USCP_AGENT_HTTPS_PORT} 로 변경 가능 
+
+nrf: 
+  nrfcfgi.yaml:
+    configuration: 
+      MongoDBName: "u5gc" # mongodb dbname
+      MongoDBUrl: "mongodb://u5gc-mongodb:27017" # mongodb 접속 정보 
+      sbi:
+        port: 8000 # nrf 서비스 포트 
+      
+smf: 
+  smfcfg.yaml:
+    configuration: 
+      extIp: ${EXT_IP} # k8s 외부 upf 와 통신해, 외/내부 ip 가 다른 경우, 설정되지 않으면 기존 로직으로
+      nrfUri: http://u5gc-scp-nrf:8000 # scp pod 의 nrf container 로 접속 (서비스로 접속)
+      scpUri: http://u5gc-scp-nrf:8080 # scp pod 의 scp container 로 접속 (서비스로 접속)
+      useIndirectMode: true            # scp 사용 모드 direct / indrect
+      useDelegateDiscovery: true       # scp 사용시 discovery 위임 여부 
+      userplaneInformation:
+        upNodes:
+          UPF:
+            nodeID: ${UPF_ID} # upf id, 보통 upf ip 와 동일하게 설정 
+            addr: ${UPF_IP} # upf ip 설정
+            sNssaiUpfInfos:
+              - sNssai:
+                  sst: 1
+                  sd: 010203
+                dnnUpfInfoList:
+                  - dnn: internet
+                    pools:
+                      - cidr: ${UE_IP_CIDR} # upf 가 gtp 에 할당하는 ip 대역 
+            interfaces:
+              - interfaceType: N3
+                endpoints:
+                  - ${UPF_IP} # upf ip 설정 
+                networkInstance: internet
+
+  service.yaml: 
+    spec:
+      type: NodePort
+      ports:
+      - name: u5gc-smf-n4
+        nodePort: 8805 # upf 와 PFCP 연동할 port 
+        port: 8805
+        protocol: UDP
+        targetPort: 8805
+
+  deployment.yaml: 
+    spec: 
+      template: 
+        spec: 
+          containers:
+          - name: u5gc-smf
+            env:
+            - name: EXT_IP # k8s 외부 upf 와 통신해, 외/내부 ip 가 다른 경우, 설정되지 않으면 기존 로직으로
+              value: u5gc-smf
+            - name: UPF_ID # upf id, 보통 upf ip 와 동일하게 설정  
+              value: 10.108.250.34
+            - name: UPF_IP # upf ip 설정
+              value: 10.108.250.34
+            - name: UE_IP_CIDR # upf 가 gtp 에 할당하는 ip 대역 
+              value: 10.20.0.0/16
+
+udm: 
+  ausfcfg.yaml:
+    configuration:
+      sbi:
+        port: 8003 # 한 pod 에 두개의 nf 가 기동되어 port 번호를 바꿈
+      nrfUri: http://u5gc-scp-nrf:8000 # scp pod 의 nrf container 로 접속 (서비스로 접속)
+
+  udrcfg.yaml:
+    configuration:
+      sbi:
+        port: 8002 # 한 pod 에 두개의 nf 가 기동되어 port 번호를 바꿈
+      nrfUri: http://u5gc-scp-nrf:8000 # scp pod 의 nrf container 로 접속 (서비스로 접속)
+
+  udmcfg.yaml:
+    configuration:
+      sbi:
+        port: 8001 # 한 pod 에 두개의 nf 가 기동되어 port 번호를 바꿈
+      nrfUri: http://u5gc-scp-nrf:8000 # scp pod 의 nrf container 로 접속 (서비스로 접속)
+      scpUri: http://u5gc-scp-nrf:8080 # scp pod 의 scp container 로 접속 (서비스로 접속)
+      useIndirectMode: true            # scp 사용 모드 direct / indrect
+      useDelegateDiscovery: true       # scp 사용시 discovery 위임 여부 
+
+upf: 
+  upfcfg.yaml: 
+    configuration: 
+      pfcp:
+        - addr: 10.108.250.34 # smf 와 연동하는 pfcp 연동에 사용할 ip, port 는 8805 로 고정 
+      gtpu:
+        - addr: 192.168.1.111 # eNB 와 연동하는 gtp 연동에 사용할 ip, port 는 25.. 로 고정 
+      dnn_list:
+        - dnn: internet
+          cidr: 10.60.0.0/16 # ue 에 할당할 gtp 터널링 ip, smf 의 UE_UP_CIDR 과 동일해야 함 

@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: u5gc-mongodb
+  labels:
+    app: u5gc-mongodb
+spec:
+  serviceName: u5gc-mongodb
+  selector:
+    matchLabels:
+      app: u5gc-mongodb
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: u5gc-mongodb
+    spec:
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+      containers:
+      - name: mongodb
+        image: mongo:4.2.7
+        ports:
+        - containerPort: 27017
+          name: mongodb
+        volumeMounts:
+        - name: mongo-persistent-storage
+          mountPath: /data/db
+        env:
+          - name: MONGO_INITDB_DATABASE
+            valueFrom:
+              configMapKeyRef:
+                name: u5gc-mongodb-config
+                key: mongo_initdb_database
+      volumes:
+      - name: mongo-persistent-storage

@@ -1,0 +1,75 @@
+info:
+  version: 1.0.2
+  description: SMF initial local configuration
+ 
+configuration:
+  smfName: SMF
+  extIp: ${EXT_IP}
+  sbi:
+    scheme: http
+    registerIPv4: u5gc-smf
+    bindingIPv4: 0.0.0.0
+    port: 8000
+    tls:
+      key: ./config/TLS/smf.key
+      pem: ./config/TLS/smf.pem
+  serviceNameList:
+    - nsmf-pdusession
+    - nsmf-event-exposure
+    - nsmf-oam
+  snssaiInfos:
+    - sNssai:
+        sst: 1
+        sd: 010203
+      dnnInfos:
+        - dnn: internet
+          dns:
+            ipv4: 8.8.8.8
+  plmnList:
+    - mcc: "450"
+      mnc: "90"
+  locality: area1
+  pfcp:
+    addr: 0.0.0.0
+  userplaneInformation:
+    upNodes:
+      gNB:
+        type: AN
+      UPF:
+        type: UPF
+        nodeID: ${UPF_IP}
+        addr: ${UPF_IP}
+        sNssaiUpfInfos:
+          - sNssai:
+              sst: 1
+              sd: 010203
+            dnnUpfInfoList:
+              - dnn: internet
+                pools:
+                  - cidr: ${UE_IP_CIDR}
+        interfaces:
+          - interfaceType: N3
+            endpoints:
+              - ${UPF_IP}
+            networkInstance: internet
+    links:
+      - A: gNB
+        B: UPF
+  nrfUri: http://u5gc-scp-nrf:8000
+ 
+logger:
+  SMF:
+    debugLevel: trace
+    ReportCaller: false
+  NAS:
+    debugLevel: trace
+    ReportCaller: false
+  NGAP:
+    debugLevel: trace
+    ReportCaller: false
+  Aper:
+    debugLevel: trace
+    ReportCaller: false
+  PFCP:
+    debugLevel: trace
+    ReportCaller: false

@@ -1,0 +1,11 @@
+info:
+  version: 1.0.1
+  description: Routing information for UE
+
+ueRoutingInfo:
+  UE1:
+    members:
+    - imsi-450900000000001
+    topology:
+      - A: gNB
+        B: UPF

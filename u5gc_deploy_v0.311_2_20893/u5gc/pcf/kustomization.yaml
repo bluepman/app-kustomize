@@ -1,0 +1,45 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+- ../../base/pcf
+
+
+images:
+- name: pcf_image
+  newName: camel.uangel.com:5000/u5gc/pcf
+  newTag: "v0.311"
+
+patchesStrategicMerge:
+- 04_pcf-deployment.yaml
+
+configMapGenerator:
+- name: u5gc-pcf-config
+  behavior: replace
+  files:
+  - config/pcfcfg.yaml
+- name: uemsub-data
+  files:
+  - config/em_exporter.xml
+  - config/uem_logger.conf
+  - config/uemsub.conf
+
+
+# patches:
+# - patch: |-
+#     - op: add
+#       path: /spec/template/spec/nodeSelector
+#       value: {kubernetes.io/hostname: mec-tb-worker}
+#   target:
+#     kind: Deployment
+#     labelSelector: "app=u5gc-pcf"
+
+
+
+
+
+
+
+
+
+namespace: u5gc

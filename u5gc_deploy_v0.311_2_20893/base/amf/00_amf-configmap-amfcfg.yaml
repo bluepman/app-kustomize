@@ -1,0 +1,116 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: u5gc-amf-config
+data:
+  amfcfg.yaml: |
+    info:
+      version: 1.0.3
+      description: AMF initial local configuration
+     
+    configuration:
+      amfName: AMF
+      ngapIpList:
+        - 0.0.0.0
+      sbi:
+        scheme: http
+        registerIPv4: u5gc-amf
+        bindingIPv4: 0.0.0.0
+        port: 8001
+        tls:
+          pem: ./config/TLS/amf.pem
+          key: ./config/TLS/amf.key
+      serviceNameList:
+        - namf-comm
+        - namf-evts
+        - namf-mt
+        - namf-loc
+        - namf-oam
+      servedGuamiList:
+        - plmnId:
+            mcc: 450
+            mnc: 90
+          amfId: cafe00
+      supportTaiList:
+        - plmnId:
+            mcc: 450
+            mnc: 90
+          tac: 1
+      plmnSupportList:
+        - plmnId:
+            mcc: 450
+            mnc: 90
+          snssaiList:
+            - sst: 1
+              sd: 010203
+            - sst: 1
+              sd: 112233
+      supportDnnList:
+        - internet
+      nrfUri: http://u5gc-scp-nrf:8000
+      scpUri: http://u5gc-scp-nrf:8080
+      useIndirectMode: true
+      useDelegateDiscovery: true
+      security:
+        integrityOrder:
+          - NIA2
+        cipheringOrder:
+          - NEA0
+      networkName:
+        full: uangel5GC
+        short: u5gc
+      locality: area1
+      networkFeatureSupport5GS:
+        enable: true
+        length: 1
+        imsVoPS: 0
+        emc: 0
+        emf: 0
+        iwkN26: 0
+        mpsi: 0
+        emcN3: 0
+        mcsi: 0
+      t3502Value: 720
+      t3512Value: 3600
+      non3gppDeregistrationTimerValue: 3240
+      t3513:
+        enable: true
+        expireTime: 6s
+        maxRetryTimes: 4
+      t3522:
+        enable: true
+        expireTime: 6s
+        maxRetryTimes: 4
+      t3550:
+        enable: true
+        expireTime: 6s
+        maxRetryTimes: 4
+      t3560:
+        enable: true
+        expireTime: 6s
+        maxRetryTimes: 4
+      t3565:
+        enable: true
+        expireTime: 6s
+        maxRetryTimes: 4
+      t3570:
+        enable: true
+        expireTime: 6s
+        maxRetryTimes: 4
+    
+    logger:
+      AMF:
+        debugLevel: trace
+        ReportCaller: false
+      NAS:
+        debugLevel: trace
+        ReportCaller: false
+      FSM:
+        debugLevel: trace
+        ReportCaller: false
+      NGAP:
+        debugLevel: trace
+        ReportCaller: false
+      Aper:
+        debugLevel: trace
+        ReportCaller: false

@@ -1,0 +1,44 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+- ../../base/amf
+
+
+images:
+- name: amf_image
+  newName: camel.uangel.com:5000/u5gc/amf
+  newTag: "v0.311"
+- name: nssf_image
+  newName: camel.uangel.com:5000/u5gc/nssf
+  newTag: "v0.311"
+
+patchesStrategicMerge:
+- 04_amf-deployment.yaml
+
+configMapGenerator:
+- name: u5gc-amf-config
+  behavior: replace
+  files:
+  - config/amfcfg.yaml
+- name: u5gc-nssf-config
+  behavior: replace
+  files:
+  - config/nssfcfg.yaml
+- name: uemsub-data
+  files:
+  - config/em_exporter.xml
+  - config/uem_logger.conf
+  - config/uemsub.conf
+
+
+# patches:
+# - patch: |-
+#     - op: add
+#       path: /spec/template/spec/nodeSelector
+#       value: {kubernetes.io/hostname: mec-tb-worker}
+#   target:
+#     kind: Deployment
+#     labelSelector: "app=u5gc-amf"
+
+namespace: u5gc

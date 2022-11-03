@@ -1,0 +1,29 @@
+{
+    "nfInstanceId": "acd21930-5896-4d39-8038-cfde2c10d657",
+    "nfType": "SCP",
+    "nfStatus" : "REGISTERED",
+    "nfInstanceName" : "UANGEL SCP",
+    "fqdn": "u5gc-scp-nrf",
+    "interPlmnFqdn": "u5gc-scp-nrf",
+    "allowedNfTypes": [
+        "NRF", "UDM", "AMF", "SMF", "AUSF", "NEF", "PCF", "SMSF", "NSSF", "UDR",
+        "LMF", "GMLC", "5G_EIR", "SEPP", "UPF", "N3IWF", "AF", "UDSF", "BSF", "CHF",
+        "NWDAF", "PCSCF", "CBCF", "HSS", "UCMF", "SOR_AF", "SPAF", "MME", "SCSAS", "SCEF",
+        "SCP", "NSSAAF", "ICSCF", "SCSCF", "DRA", "AANF", "5G_DDNMF", "NSACF", "MFAF", "EASDF",
+        "DCCF"
+    ],
+    "scpDomains" : [
+        "cscp",
+        "pscp"
+    ],
+    "scpInfo" : {
+        "scpDomainInfoList": {
+            "cscp": {
+               "scpFqdn": "u5gc-scp-nrf"
+            },
+            "pscp": {
+                "scpFqdn": "u5gc-scp-nrf"
+             }
+         }
+    }
+}

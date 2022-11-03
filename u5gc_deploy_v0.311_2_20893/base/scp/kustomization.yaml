@@ -1,0 +1,35 @@
+kind: Kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+
+resources:
+- 01_scp-sa.yaml
+- 02_scp-rbac.yaml
+- 03_scp-service.yaml
+- 04_scp-deployment.yaml
+
+secretGenerator:
+- name: u5gc-scp-tls-secret
+  files:
+  - cert/camel_git_cert.pem
+  - cert/unrf_cert.pem
+  - cert/unrf_key.pem
+  type: "Opaque"
+- name: u5gc-nrf-tls-secret
+  files:
+  - cert/nrf.pem
+  - cert/nrf.key
+  type: "Opaque"
+
+configMapGenerator:
+- name: u5gc-scp-config
+  files:
+  - config/fluent.conf
+  - config/jaegertrace.yaml
+  - config/logger.conf
+  - config/services.conf
+  - config/scp-profile.json
+  - config/uscp.conf
+- name: u5gc-nrf-config
+  files:
+  - config/nrfcfg.yaml
+

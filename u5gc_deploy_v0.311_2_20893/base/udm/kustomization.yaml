@@ -1,0 +1,39 @@
+kind: Kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+
+resources:
+  - 01_udm-sa.yaml
+  - 02_udm-rbac.yaml
+  - 03_udm-service.yaml
+  - 04_udm-deployment.yaml
+
+secretGenerator:
+- name: u5gc-udm-tls-secret
+  files:
+  - cert/udm.pem
+  - cert/udm.key
+  type: "Opaque"
+- name: u5gc-udr-tls-secret
+  files:
+  - cert/udr.pem
+  - cert/udr.key
+  type: "Opaque"
+- name: u5gc-ausf-tls-secret
+  files:
+  - cert/ausf.pem
+  - cert/ausf.key
+  type: "Opaque"
+
+# generatorOptions:
+#   disableNameSuffixHash: true
+
+configMapGenerator:
+- name: u5gc-udm-config
+  files:
+  - config/udmcfg.yaml
+- name: u5gc-udr-config
+  files:
+  - config/udrcfg.yaml
+- name: u5gc-ausf-config
+  files:
+  - config/ausfcfg.yaml

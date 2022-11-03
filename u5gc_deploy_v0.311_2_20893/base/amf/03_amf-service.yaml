@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: u5gc-amf
+  name: u5gc-amf
+spec:
+  type: NodePort
+  selector:
+    app: u5gc-amf
+  ports:
+  - name: u5gc-sctp-amf
+    nodePort : 38412
+    port: 38412
+    protocol: SCTP
+    targetPort: 38412
+  - name: u5gc-sbi-amf
+    nodePort : 31113
+    port: 8001
+    protocol: TCP
+    targetPort: 8001
+  - name: u5gc-sbi-nssf
+    port: 8002
+    protocol: TCP
+    targetPort: 8002

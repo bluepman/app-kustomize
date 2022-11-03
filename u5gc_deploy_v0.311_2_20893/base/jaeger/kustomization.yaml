@@ -1,0 +1,6 @@
+kind: Kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+
+resources:
+- 00_jaeger-service.yaml
+- 01_jaeger-deployment.yaml

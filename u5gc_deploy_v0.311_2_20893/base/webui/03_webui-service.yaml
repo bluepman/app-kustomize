@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: u5gc-webui
+  name: u5gc-webui
+spec:
+  type: NodePort
+  ports:
+  - nodePort: 31111
+    port: 5000
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app: u5gc-webui

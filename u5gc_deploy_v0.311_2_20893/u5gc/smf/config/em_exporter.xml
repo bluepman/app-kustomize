@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<exporter_conf>
+  <config listenAddress=":9090"/>
+  <metrics namespace="smsf" subsystem="rts">
+    <metric name="smsf_transaction_request_total" rts_name="smsf_transaction" field_name="request_total"/>
+    <metric name="smsf_transaction_response_total" rts_name="smsf_transaction" field_name="response_total"/>
+    <metric name="smsf_transaction_success_total" rts_name="smsf_transaction" field_name="success_total"/>
+    <metric name="smsf_transaction_failure_total" rts_name="smsf_transaction" field_name="failure_total"/>
+  </metrics>
+</exporter_conf>
